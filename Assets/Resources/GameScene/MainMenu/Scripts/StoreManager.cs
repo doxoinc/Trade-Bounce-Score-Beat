@@ -7,15 +7,14 @@ public class StoreManager : MonoBehaviour
     [System.Serializable]
     public class StoreItem
     {
-        public string itemName;
-        public int price;
-        public bool isPurchased;
-        public Button purchaseButton;
-        public Image itemImage;
+        public string itemName;        // Название предмета
+        public int coinAmount;         // Количество монет для добавления
+        public Button purchaseButton;  // Кнопка покупки/получения
+        public Image itemImage;        // Изображение предмета
     }
 
-    public StoreItem[] skins;
-    public TextMeshProUGUI playerMoneyText;
+    public StoreItem[] coinItems;           // Массив предметов в магазине
+    public TextMeshProUGUI playerMoneyText; // UI элемент для отображения монет игрока
 
     private void OnEnable()
     {
@@ -40,65 +39,75 @@ public class StoreManager : MonoBehaviour
 
     private void Start()
     {
-        LoadPurchases();
+        InitializeStoreItems();
         UpdateUI();
     }
 
     /// <summary>
-    /// Покупка предмета по индексу.
+    /// Инициализирует предметы магазина, добавляя слушатели на кнопки.
     /// </summary>
-    /// <param name="itemIndex">Индекс предмета в массиве skins.</param>
-    public void PurchaseItem(int itemIndex)
+    private void InitializeStoreItems()
+    {
+        for (int i = 0; i < coinItems.Length; i++)
+        {
+            if (coinItems[i].purchaseButton != null)
+            {
+                int index = i; // Локальная копия индекса для использования в лямбда-функции
+                coinItems[i].purchaseButton.onClick.AddListener(() => AddCoins(index));
+            }
+            else
+            {
+                Debug.LogWarning($"purchaseButton не назначен для предмета '{coinItems[i].itemName}'.");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Добавляет монеты игроку при нажатии на предмет.
+    /// </summary>
+    /// <param name="itemIndex">Индекс предмета в массиве coinItems.</param>
+    private void AddCoins(int itemIndex)
     {
         // Проверка на корректность индекса
-        if (itemIndex < 0 || itemIndex >= skins.Length)
+        if (itemIndex < 0 || itemIndex >= coinItems.Length)
         {
             Debug.LogError($"Invalid itemIndex: {itemIndex}");
             return;
         }
 
-        StoreItem item = skins[itemIndex];
+        StoreItem item = coinItems[itemIndex];
 
-        if (!item.isPurchased)
+        if (item.coinAmount > 0)
         {
+            // Добавляем монеты игроку
             if (CoinManager.Instance != null)
             {
-                bool success = CoinManager.Instance.SpendCoins(item.price);
-                if (success)
-                {
-                    item.isPurchased = true;
-
-                    // Сохраняем покупку
-                    PlayerPrefs.SetInt(item.itemName, 1);
-                    PlayerPrefs.Save();
-
-                    UpdateUI();
-                    Debug.Log($"Предмет '{item.itemName}' куплен за {item.price} монет.");
-                }
-                else
-                {
-                    Debug.Log("Недостаточно монет для покупки.");
-                }
+                CoinManager.Instance.AddCoins(item.coinAmount);
+                Debug.Log($"Добавлено {item.coinAmount} монет игроку через магазин '{item.itemName}'.");
             }
             else
             {
                 Debug.LogError("CoinManager.Instance равен null. Убедитесь, что CoinManager присутствует в сцене.");
+                return;
             }
+
+            // Воспроизведение звука получения монет
+            if (AudioManager.Instance != null && AudioManager.Instance.collectCoinClip != null)
+            {
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.collectCoinClip);
+            }
+            else
+            {
+                Debug.LogWarning("AudioManager.Instance или collectCoinClip не назначены.");
+            }
+
+            // (Опционально) Добавьте визуальные эффекты, уведомления или анимации здесь
+
+            // Обновляем UI (монеты обновятся автоматически через событие)
         }
         else
         {
-            Debug.Log("Товар уже куплен.");
-        }
-    }
-
-    /// <summary>
-    /// Загружает информацию о покупках из PlayerPrefs.
-    /// </summary>
-    private void LoadPurchases()
-    {
-        foreach (var item in skins)
-        {
-            item.isPurchased = PlayerPrefs.GetInt(item.itemName, 0) == 1;
+            Debug.LogWarning($"Предмет '{item.itemName}' имеет нулевое количество монет.");
         }
     }
 
@@ -107,47 +116,19 @@ public class StoreManager : MonoBehaviour
     /// </summary>
     private void UpdateUI()
     {
-        // Обновление состояния кнопок покупки
-        for (int i = 0; i < skins.Length; i++)
-        {
-            if (skins[i].isPurchased)
-            {
-                skins[i].purchaseButton.interactable = false;
-                TextMeshProUGUI buttonText = skins[i].purchaseButton.GetComponentInChildren<TextMeshProUGUI>();
-                if (buttonText != null)
-                {
-                    buttonText.text = "Куплено";
-                }
-                else
-                {
-                    Debug.LogWarning($"TextMeshProUGUI не найден на кнопке покупки предмета '{skins[i].itemName}'.");
-                }
-            }
-            else
-            {
-                skins[i].purchaseButton.interactable = true;
-                TextMeshProUGUI buttonText = skins[i].purchaseButton.GetComponentInChildren<TextMeshProUGUI>();
-                if (buttonText != null)
-                {
-                    buttonText.text = "Купить";
-                }
-                else
-                {
-                    Debug.LogWarning($"TextMeshProUGUI не найден на кнопке покупки предмета '{skins[i].itemName}'.");
-                }
-            }
-        }
+        // Обновление текста количества монет происходит через событие CoinsChanged
+        // Здесь можно добавить дополнительную логику, если необходимо
     }
 
     /// <summary>
-    /// Обновляет текст количества монет в UI.
+    /// Обновляет текст UI с количеством монет.
     /// </summary>
     /// <param name="newCoinAmount">Новое количество монет.</param>
     private void UpdatePlayerMoneyText(int newCoinAmount)
     {
         if (playerMoneyText != null)
         {
-            playerMoneyText.text = "Монеты: " + newCoinAmount.ToString();
+            playerMoneyText.text = newCoinAmount.ToString();
             Debug.Log($"Обновление UI: Монеты: {newCoinAmount}");
         }
         else
@@ -157,34 +138,23 @@ public class StoreManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Метод для добавления монет (например, из consumable покупки).
-    /// </summary>
-    /// <param name="amount">Количество монет для добавления.</param>
-    public void AddMoney(int amount)
-    {
-        if (CoinManager.Instance != null)
-        {
-            CoinManager.Instance.AddCoins(amount);
-            // UpdateUI(); // Не нужно, так как обновление происходит через событие
-        }
-        else
-        {
-            Debug.LogError("CoinManager.Instance равен null в AddMoney.");
-        }
-    }
-
-    /// <summary>
     /// Сбрасывает все покупки до состояния не куплено.
     /// </summary>
     public void ResetPurchases()
     {
-        foreach (var item in skins)
+        foreach (var item in coinItems)
         {
-            item.isPurchased = false;
-            PlayerPrefs.SetInt(item.itemName, 0);
+            // В вашей текущей реализации покупки не требуется, так как предметы дают монеты бесплатно
+            // Однако, если вы хотите, чтобы предметы могли быть использованы только один раз, можно сбросить состояния
+            // Например, сделать кнопки снова активными, если они были деактивированы
+            // В текущей реализации это не требуется, поэтому метод может быть пустым или содержать соответствующую логику
+
+            // Пример сброса состояния кнопок:
+            // item.isPurchased = false; // Если вы используете подобную логику
+            // item.purchaseButton.interactable = true;
         }
+        // Сохранение изменений, если необходимо
         PlayerPrefs.Save();
-        UpdateUI();
         Debug.Log("Все покупки сброшены.");
     }
 }

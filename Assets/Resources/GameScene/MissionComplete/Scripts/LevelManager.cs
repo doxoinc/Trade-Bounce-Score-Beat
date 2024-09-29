@@ -76,6 +76,16 @@ public class LevelManager : MonoBehaviour
                 // Добавляем монеты за прохождение уровня
                 CoinManager.Instance.AddCoins(coinsPerLevel);
                 Debug.Log($"Добавлено {coinsPerLevel} монет за прохождение уровня.");
+
+                // Воспроизведение звука получения монет
+                if (AudioManager.Instance != null && AudioManager.Instance.collectCoinClip != null)
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.Instance.collectCoinClip);
+                }
+                else
+                {
+                    Debug.LogWarning("AudioManager.Instance или collectCoinClip не назначены.");
+                }
             }
             else
             {
@@ -93,20 +103,39 @@ public class LevelManager : MonoBehaviour
                 Debug.LogError("coinsEarnedText равен null. Убедитесь, что TextMeshProUGUI назначен в LevelManager.");
             }
 
-            missionCompletePanel.SetActive(true); // Включить панель
+            // Включаем панель Mission Complete
+            missionCompletePanel.SetActive(true);
             Debug.Log($"Панель активирована: {missionCompletePanel.activeSelf}");
 
+            // Воспроизведение анимации открытия панели
             if (missionCompleteAnimator != null)
             {
                 missionCompleteAnimator.SetTrigger("Open"); // Запустить анимацию открытия
                 Debug.Log("Триггер 'Open' активирован.");
+
+                // Воспроизведение звука завершения уровня (например, звук аплодисментов)
+                if (AudioManager.Instance != null && AudioManager.Instance.gameOverClip != null)
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.Instance.gameOverClip);
+                }
+                else
+                {
+                    Debug.LogWarning("AudioManager.Instance или gameOverClip не назначены.");
+                }
             }
             else
             {
                 Debug.LogWarning("Animator не назначен.");
             }
 
-            yield return new WaitForSecondsRealtime(1f); // Ждём 1 секунду перед уменьшением timeScale
+            // Воспроизведение фоновой музыки Mission Complete (если требуется)
+            if (AudioManager.Instance != null && AudioManager.Instance.missionCompleteMusic != null)
+            {
+                AudioManager.Instance.PlayMusic(AudioManager.Instance.missionCompleteMusic);
+            }
+
+            // Ждём 1 секунду перед изменением timeScale
+            yield return new WaitForSecondsRealtime(1f);
 
             float duration = 1f;
             float elapsed = 0f;

@@ -121,6 +121,16 @@ public class PlayerController : MonoBehaviour
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         controlManager.jump = false;
 
+        // Воспроизведение звука прыжка
+        if (AudioManager.Instance != null && AudioManager.Instance.jumpClip != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.jumpClip);
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager.Instance или jumpClip не назначены.");
+        }
+
         // Проверяем, был ли уже выполнен первый прыжок
         if (!hasJumpedOnce)
         {
@@ -221,6 +231,17 @@ public class PlayerController : MonoBehaviour
     {
         currentLives--;
         Debug.Log("Потеряна жизнь. Оставшиеся жизни: " + currentLives);
+
+        // Воспроизведение звука потери жизни
+        if (AudioManager.Instance != null && AudioManager.Instance.loseHeartClip != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.loseHeartClip);
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager.Instance или loseHeartClip не назначены.");
+        }
+
         UpdateLivesUI();
 
         if (currentLives > 0)
@@ -299,6 +320,16 @@ public class PlayerController : MonoBehaviour
     void GameOver()
     {
         Debug.Log("Игра окончена!");
+
+        // Воспроизведение звука завершения игры
+        if (AudioManager.Instance != null && AudioManager.Instance.gameOverClip != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.gameOverClip);
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager.Instance или gameOverClip не назначены.");
+        }
 
         // Активируем панель Game Over
         if (gameOverCanvas != null)

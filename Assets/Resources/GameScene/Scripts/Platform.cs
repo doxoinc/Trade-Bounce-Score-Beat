@@ -128,7 +128,17 @@ public class Platform : MonoBehaviour
             {
                 // Добавляем очки игроку
                 playerController.AddScore(pointsThisFrame);
-                //Debug.Log("Добавлено " + pointsThisFrame + " очков. Текущий счёт: " + playerController.score);
+                // Воспроизведение звука получения очков
+                if (AudioManager.Instance != null && AudioManager.Instance.collectCoinClip != null)
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.Instance.collectCoinClip);
+                }
+                else
+                {
+                    Debug.LogWarning("AudioManager.Instance или collectCoinClip не назначены.");
+                }
+
+                // Отображение визуального эффекта
                 CreateFloatingText(pointsThisFrame, true); // true для добавления
 
                 // Уменьшаем очки на платформе
@@ -147,7 +157,17 @@ public class Platform : MonoBehaviour
                     // Меняем цвет платформы на серый и устанавливаем флаг
                     pointsDepleted = true;
                     ChangePlatformColorToGray();
-                    //Debug.Log("Очки платформы закончились. Платформа стала серой.");
+
+                    // Воспроизведение звука исчерпания очков
+                    if (AudioManager.Instance != null && AudioManager.Instance.removeGlassesClip != null)
+                    {
+                        AudioManager.Instance.PlaySFX(AudioManager.Instance.removeGlassesClip);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("AudioManager.Instance или removeGlassesClip не назначены.");
+                    }
+
                     break;
                 }
             }
@@ -155,7 +175,17 @@ public class Platform : MonoBehaviour
             {
                 // Отнимаем очки у игрока
                 playerController.SubtractScore(pointsThisFrame);
-                //Debug.Log("Отнято " + pointsThisFrame + " очков. Текущий счёт: " + playerController.score);
+                // Воспроизведение звука потери очков
+                if (AudioManager.Instance != null && AudioManager.Instance.loseHeartClip != null)
+                {
+                    AudioManager.Instance.PlaySFX(AudioManager.Instance.loseHeartClip);
+                }
+                else
+                {
+                    Debug.LogWarning("AudioManager.Instance или loseHeartClip не назначены.");
+                }
+
+                // Отображение визуального эффекта
                 CreateFloatingText(pointsThisFrame, false); // false для отнимания
 
                 // Уменьшаем очки на платформе
@@ -174,13 +204,21 @@ public class Platform : MonoBehaviour
                     // Меняем цвет платформы на серый и устанавливаем флаг
                     pointsDepleted = true;
                     ChangePlatformColorToGray();
-                    //Debug.Log("Очки платформы закончились. Платформа стала серой.");
+
+                    // Воспроизведение звука исчерпания очков
+                    if (AudioManager.Instance != null && AudioManager.Instance.removeGlassesClip != null)
+                    {
+                        AudioManager.Instance.PlaySFX(AudioManager.Instance.removeGlassesClip);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("AudioManager.Instance или removeGlassesClip не назначены.");
+                    }
+
                     break;
                 }
             }
         }
-
-        //Debug.Log("Coroutine AccumulatePoints завершен для " + platformType);
     }
 
     void ChangePlatformColorToGray()

@@ -222,7 +222,7 @@ public class RewardSystem : MonoBehaviour
         {
             if (isPreliminary)
             {
-                rewardAmountText.text = $"Вы получите {amount} монет!";
+                rewardAmountText.text = amount.ToString();
             }
             else
             {

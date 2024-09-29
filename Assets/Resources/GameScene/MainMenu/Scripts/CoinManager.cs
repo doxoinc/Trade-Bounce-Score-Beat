@@ -51,7 +51,6 @@ public class CoinManager : MonoBehaviour
         playerCoins += amount;
         SaveCoins();
         NotifyCoinsChanged();
-        Debug.Log($"Добавлено {amount} монет. Текущий баланс: {playerCoins}");
     }
 
     /// <summary>
@@ -66,7 +65,6 @@ public class CoinManager : MonoBehaviour
             playerCoins -= amount;
             SaveCoins();
             NotifyCoinsChanged();
-            Debug.Log($"Отнято {amount} монет. Текущий баланс: {playerCoins}");
             return true;
         }
         else
@@ -110,20 +108,17 @@ public class CoinManager : MonoBehaviour
         // Очищаем все сохранённые данные
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
-        Debug.Log("Все PlayerPrefs очищены.");
 
         // Сброс количества монет до начального значения
         playerCoins = startingCoins;
         SaveCoins();
         NotifyCoinsChanged();
-        Debug.Log($"Монеты сброшены до начального значения: {playerCoins}");
 
         // Найдите и сбросьте состояние покупок в StoreManager
         StoreManager storeManager = FindObjectOfType<StoreManager>();
         if (storeManager != null)
         {
             storeManager.ResetPurchases();
-            Debug.Log("Состояние покупок сброшено.");
         }
         else
         {

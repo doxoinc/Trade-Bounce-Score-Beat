@@ -23,10 +23,20 @@ public class MenuManager : MonoBehaviour
 
     void Start()
     {
+        if (AudioManager.Instance != null && AudioManager.Instance.mainMenuMusic != null)
+        {
+            AudioManager.Instance.PlayMusic(AudioManager.Instance.mainMenuMusic);
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager.Instance или mainMenuMusic не назначены.");
+        }
         // Устанавливаем спрайты кнопок в состояние по умолчанию при старте
         for (int i = 0; i < panelButtons.Length; i++)
         {
             UpdateButtonState(i, false);
+            int index = i; // Для использования внутри лямбда-функции
+            panelButtons[i].onClick.AddListener(() => OnPanelButtonClicked(index));
         }
     }
 
@@ -148,6 +158,16 @@ public class MenuManager : MonoBehaviour
     // Методы для кнопок
     public void OnPanelButtonClicked(int panelIndex)
     {
+        // Воспроизведение звука при нажатии на кнопку
+        if (AudioManager.Instance != null && AudioManager.Instance.buttonClickClip != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.buttonClickClip);
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager.Instance или buttonClickClip не назначены.");
+        }
+
         OpenPanel(panelIndex);
     }
 
@@ -155,6 +175,16 @@ public class MenuManager : MonoBehaviour
     {
         if (currentPanelIndex != -1)
         {
+            // Воспроизведение звука при закрытии панели
+            if (AudioManager.Instance != null && AudioManager.Instance.buttonClickClip != null)
+            {
+                AudioManager.Instance.PlaySFX(AudioManager.Instance.buttonClickClip);
+            }
+            else
+            {
+                Debug.LogWarning("AudioManager.Instance или buttonClickClip не назначены.");
+            }
+
             ClosePanel(currentPanelIndex);
         }
     }
@@ -162,6 +192,16 @@ public class MenuManager : MonoBehaviour
     // Метод для кнопки Home
     public void OnHomeButtonClicked()
     {
+        // Воспроизведение звука при нажатии на кнопку Home
+        if (AudioManager.Instance != null && AudioManager.Instance.buttonClickClip != null)
+        {
+            AudioManager.Instance.PlaySFX(AudioManager.Instance.buttonClickClip);
+        }
+        else
+        {
+            Debug.LogWarning("AudioManager.Instance или buttonClickClip не назначены.");
+        }
+
         CloseAllPanels();
     }
 }
